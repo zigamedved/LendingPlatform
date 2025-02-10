@@ -96,7 +96,7 @@ contract LendingPool is ReentrancyGuard {
         uint256 _loanAmount,
         uint256 _interestRate,
         uint256 _durationDays
-    ) external {
+    ) external whenNotPaused {
         require(
             supportedTokens[_collateralToken] && supportedTokens[_loanToken],
             "Collateral or loan token not supported"
@@ -138,7 +138,7 @@ contract LendingPool is ReentrancyGuard {
         emit LoanCreated(msg.sender, _loanAmount);
     }
 
-    function liquidateLoan(address _borrower) external {
+    function liquidateLoan(address _borrower) external whenNotPaused {
         Loan storage loan = loans[_borrower];
         require(block.timestamp > loan.dueDate, "Loan not expired");
         require(!loan.liquidated, "Already liquidated");
@@ -164,7 +164,10 @@ contract LendingPool is ReentrancyGuard {
         emit LoanLiquidated(_borrower);
     }
 
-    function deposit(IERC20 token, uint256 amount) external nonReentrant {
+    function deposit(
+        IERC20 token,
+        uint256 amount
+    ) external nonReentrant whenNotPaused {
         require(supportedTokens[token], "Token not supported");
         require(
             token.transferFrom(msg.sender, address(this), amount),
@@ -175,7 +178,10 @@ contract LendingPool is ReentrancyGuard {
         emit Deposit(msg.sender, token, amount);
     }
 
-    function withdraw(IERC20 token, uint256 amount) external nonReentrant {
+    function withdraw(
+        IERC20 token,
+        uint256 amount
+    ) external nonReentrant whenNotPaused {
         require(deposits[token][msg.sender] >= amount, "Insufficient balance");
         deposits[token][msg.sender] -= amount;
         totalDeposits[token] -= amount;
