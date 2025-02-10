@@ -1,0 +1,21 @@
+type Loan {
+  id: ID!
+  borrower: String!
+  collateralToken: String!
+  loanToken: String!
+  collateralAmount: Float!
+  loanAmount: Float!
+  interestRate: Float!
+  dueDate: String!
+  liquidated: Boolean!
+  lastInterestUpdate: String!
+  accruedInterest: Float!
+}
+
+type Query {
+  loans: [Loan!]!
+}
+
+type Mutation {
+  syncLoans: Boolean!
+}

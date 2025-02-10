@@ -1,12 +1,10 @@
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract LendingPool is ReentrancyGuard {
-    using Math for uint256;
-
     address public admin;
     mapping(IERC20 => bool) public supportedTokens;
     uint256 public liquidationThreshold = 150; // 150% collateralization
@@ -75,18 +73,15 @@ contract LendingPool is ReentrancyGuard {
     event TokenStatusUpdated(IERC20 indexed token, bool supported);
     event ThresholdUpdated(uint256 newThreshold);
 
+    // not compound interest or variable interest rate
     function calculateInterest(
-        // not compound interest or variable interest rate
         Loan storage loan
     ) internal view returns (uint256) {
         uint256 timeElapsed = block.timestamp - loan.lastInterestUpdate;
         return
-            loan
-                .loanAmount
-                .mul(loan.interestRate)
-                .mul(timeElapsed)
-                .div(365 days)
-                .div(100);
+            (loan.loanAmount * loan.interestRate * timeElapsed) /
+            (365 days) /
+            100;
     }
 
     function createLoan(
@@ -113,7 +108,7 @@ contract LendingPool is ReentrancyGuard {
             _collateralAmount > 0,
             "Collateral amount must be greater than 0"
         );
-        (bool success, ) = _collateralToken.transferFrom(
+        bool success = _collateralToken.transferFrom(
             msg.sender,
             address(this),
             _collateralAmount
@@ -127,14 +122,14 @@ contract LendingPool is ReentrancyGuard {
             collateralAmount: _collateralAmount,
             loanAmount: _loanAmount,
             interestRate: _interestRate,
-            dueDate: block.timestamp.add(_durationDays.mul(1 days)),
+            dueDate: block.timestamp + (_durationDays * 1 days),
             liquidated: false,
             lastInterestUpdate: block.timestamp,
             accruedInterest: 0
         });
 
-        bool success = _loanToken.transfer(msg.sender, _loanAmount);
-        require(success, "Loan token transfer failed");
+        bool success2 = _loanToken.transfer(msg.sender, _loanAmount);
+        require(success2, "Loan token transfer failed");
         emit LoanCreated(msg.sender, _loanAmount);
     }
 
@@ -145,9 +140,9 @@ contract LendingPool is ReentrancyGuard {
 
         // simplified collateral check (use oracles in production)
         uint256 collateralValue = loan.collateralAmount;
-        uint256 loanValue = loan.loanAmount.add(calculateInterest(loan));
+        uint256 loanValue = loan.loanAmount + calculateInterest(loan);
         require(
-            collateralValue.mul(100) < loanValue.mul(liquidationThreshold),
+            collateralValue * (100) < loanValue * (liquidationThreshold),
             "Collateral sufficient"
         );
 

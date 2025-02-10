@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "collateralization",
+    "ethersproject",
     "IERC",
     "pgdata",
     "Reentrancy",
