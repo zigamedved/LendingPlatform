@@ -43,6 +43,10 @@ contract LendingPool is ReentrancyGuard {
         paused = _paused;
     }
 
+    function ping() public pure returns (string memory) {
+        return "pong";
+    }
+
     function emergencyWithdraw(IERC20 token) external onlyAdmin {
         uint256 balance = token.balanceOf(address(this));
         require(token.transfer(admin, balance), "Transfer failed");

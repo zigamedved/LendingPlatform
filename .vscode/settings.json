@@ -1,10 +1,14 @@
 {
   "cSpell.words": [
     "collateralization",
+    "connectwallet",
     "ethersproject",
     "IERC",
     "pgdata",
+    "prestart",
     "Reentrancy",
-    "typechain"
+    "TLOAN",
+    "typechain",
+    "vanp"
   ]
 }

@@ -27,3 +27,9 @@ This project is a decentralized lending platform that allows users to lend and b
 - Real-time analytics (loan health, interest accrual)
 - Wallet integration (MetaMask, WalletConnect)
 - **Tools**: React, ethers.js, Web3-UI components
+
+
+
+# IMPORTANT
+Metamask has to be connected to the localhost:8545 network 
+
