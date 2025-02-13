@@ -5,7 +5,7 @@ import LendingPool from '../abi/LendingPool.json';
 
 
 const WalletCard = () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const provider = new ethers.BrowserProvider(window.ethereum)
     const [errorMessage, setErrorMessage] = useState(null);
     const [defaultAccount, setDefaultAccount] = useState(null);
     const [loans, setLoans] = useState([]);
@@ -28,7 +28,7 @@ const WalletCard = () => {
         setDefaultAccount(address);
 
         const balance = await getUserBalance(address)
-        setUserBalance(ethers.utils.formatEther(balance));
+        setUserBalance(ethers.formatEther(balance));
     };
 
     let lendingPool;
@@ -40,25 +40,28 @@ const WalletCard = () => {
         }
         try {    
           
-          lendingPool = new ethers.Contract(process.env.REACT_APP_LENDING_POOL_ADDRESS, LendingPool.abi, provider.getSigner(0));
+            // NOTE: provider is used for READ operations
+            // NOTE: signer is used for state changes and transactions
+            lendingPool = new ethers.Contract(process.env.REACT_APP_LENDING_POOL_ADDRESS, LendingPool.abi, provider);
             console.log("Contract initialized!")
-  
-          
-          try {
-            const loanData = await lendingPool.loans(defaultAccount); // loanData is array
-            console.log(loanData)
-            if (loanData) {
-              setLoans([{ // TODO, remove hardcoded value
-                id: '1',
-                loanAmount: Number(loanData.loanAmount),
-                dueDate: Number(loanData.dueDate)
-              }]);
+
+            // TODO: fix this ugly code
+            // TODO: add 2 contract instances, one read one write          
+            try {
+                const loanData = await lendingPool.loans(defaultAccount); // loanData is array
+                console.log(loanData)
+                if (loanData) {
+                setLoans([{ // TODO, remove hardcoded value
+                    id: '1',
+                    loanAmount: Number(loanData.loanAmount),
+                    dueDate: Number(loanData.dueDate)
+                }]);
+                }
+            } catch (err) {
+                console.error(err)
+                console.log("No loans found for this account");
+                setLoans([]);
             }
-          } catch (err) {
-            console.error(err)
-            console.log("No loans found for this account");
-            setLoans([]);
-          }
         } catch (err) {
           console.error('Error connecting to lending pool:', err);
           setErrorMessage('Error connecting to lending pool contract.');
@@ -100,7 +103,7 @@ const WalletCard = () => {
                             margin: '10px 0',
                             borderRadius: '5px'
                         }}>
-                            <p>Loan Amount: {ethers.utils.formatEther(loan.loanAmount.toString())} ETH</p>
+                            <p>Loan Amount: {ethers.formatEther(loan.loanAmount.toString())} ETH</p>
                             <p>Due Date: {new Date(loan.dueDate * 1000).toLocaleDateString()}</p>
                         </div>
                     ))}
