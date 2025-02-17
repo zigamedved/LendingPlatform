@@ -28,8 +28,10 @@ This project is a decentralized lending platform that allows users to lend and b
 - Wallet integration (MetaMask, WalletConnect)
 - **Tools**: React, ethers.js, Web3-UI components
 
-
+# Running 
+- go to /contracts and run `npx hardhat node`
+- open new terminal, go to /contracts and run `npx hardhat run scripts/deploy.ts --network localhost`
+- open new terminal, go to /frontend and run `npm run start`
 
 # IMPORTANT
-Metamask has to be connected to the localhost:8545 network 
-
+Metamask has to be connected to the local hardhat network: ![alt text](/src/hardhatNetwork.png)

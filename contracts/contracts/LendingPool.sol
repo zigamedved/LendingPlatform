@@ -97,6 +97,11 @@ contract LendingPool is ReentrancyGuard {
         uint256 _durationDays
     ) external whenNotPaused {
         require(
+            loans[msg.sender].loanAmount == 0,
+            "You already have an active loan"
+        );
+
+        require(
             supportedTokens[_collateralToken] && supportedTokens[_loanToken],
             "Collateral or loan token not supported"
         );
@@ -192,7 +197,7 @@ contract LendingPool is ReentrancyGuard {
         Loan storage loan = loans[msg.sender];
         require(!loan.liquidated, "Loan already liquidated");
 
-        uint256 totalDue = loan.loanAmount + calculateInterest(loan);
+        uint256 totalDue = loan.loanAmount; //+ calculateInterest(loan);
         require(
             loan.loanToken.transferFrom(msg.sender, address(this), totalDue),
             "Transfer failed"

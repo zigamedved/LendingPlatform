@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import { ethers } from "ethers";
 import LendingPool from '../abi/LendingPool.json';
+import TestToken from '../abi/TestToken.json';
 
 
 const WalletCard = () => {
@@ -10,6 +11,8 @@ const WalletCard = () => {
     const [defaultAccount, setDefaultAccount] = useState(null);
     const [loans, setLoans] = useState([]);
     const [userBalance, setUserBalance] = useState(null);
+    const [loanAmount, setLoanAmount] = useState('');
+    const [collateralAmount, setCollateralAmount] = useState('');
 
     let signer;
     const connectwalletHandler = () => {
@@ -34,48 +37,172 @@ const WalletCard = () => {
     let lendingPool;
 
     useEffect(() => {
-    async function fetchLoans() {
+        const checkConnection = async () => {
+            if (window.ethereum) {
+                const accounts = await provider.listAccounts();
+                if (accounts.length > 0) {
+                    const signer = await provider.getSigner(0);
+                    await accountChangedHandler(signer);
+                }
+            }
+        };
+        
+        checkConnection();
+    }, []);
+
+    useEffect(() => {
+        console.log("my loans: ", loans);
+    }, [loans]);
+
+    const fetchLoans = async () => {
         if (!defaultAccount) {
-            return
+            return;
         }
         try {    
-          
-            // NOTE: provider is used for READ operations
-            // NOTE: signer is used for state changes and transactions
-            lendingPool = new ethers.Contract(process.env.REACT_APP_LENDING_POOL_ADDRESS, LendingPool.abi, provider);
-            console.log("Contract initialized!")
-
-            // TODO: fix this ugly code
-            // TODO: add 2 contract instances, one read one write          
+            lendingPool = new ethers.Contract(
+                process.env.REACT_APP_LENDING_POOL_ADDRESS, 
+                LendingPool.abi, 
+                provider
+            );
+            
             try {
-                const loanData = await lendingPool.loans(defaultAccount); // loanData is array
-                console.log(loanData)
-                if (loanData) {
-                setLoans([{ // TODO, remove hardcoded value
-                    id: '1',
-                    loanAmount: Number(loanData.loanAmount),
-                    dueDate: Number(loanData.dueDate)
-                }]);
+                const loanData = await lendingPool.loans(defaultAccount);
+                if (loanData && loanData.loanAmount.toString() !== "0") {
+                    setLoans([{
+                        id: '1',
+                        loanAmount: loanData.loanAmount,
+                        dueDate: Number(loanData.dueDate)
+                    }]);
+                    setLoanAmount('');
+                    setCollateralAmount('');
+                } else {
+                    setLoans([]);
                 }
             } catch (err) {
-                console.error(err)
                 console.log("No loans found for this account");
                 setLoans([]);
             }
         } catch (err) {
-          console.error('Error connecting to lending pool:', err);
-          setErrorMessage('Error connecting to lending pool contract.');
+            console.error('Error:', err);
+            setErrorMessage(err.message);
         }
-      
-    }
-    fetchLoans();
-  }, [defaultAccount]);
+    };
 
-
+    useEffect(() => {
+        fetchLoans();
+    }, [defaultAccount]);
 
     const getUserBalance = async (address) => {
         return provider.getBalance(address, "latest");
     };
+
+
+    const createLoan = async () => {
+        try {
+            signer = await provider.getSigner(0)
+            if(!signer || !provider){
+                return;
+            }
+
+            console.log("amount of collateral:", collateralAmount)
+            console.log("amount of loan:", loanAmount)
+
+            const userAddress = await signer.getAddress();
+            console.log("User address:", userAddress);
+            
+            const collateralToken = new ethers.Contract(
+                process.env.REACT_APP_COLLATERAL_TOKEN,
+                TestToken.abi,
+                signer
+            );
+
+            const balance = await collateralToken.balanceOf(userAddress);
+            console.log("Collateral token balance:", ethers.formatEther(balance));
+
+
+            const loanToken = new ethers.Contract(
+                process.env.REACT_APP_LOAN_TOKEN,
+                TestToken.abi,
+                provider
+            );
+            const loanBalanceBefore = await loanToken.balanceOf(userAddress);
+            console.log("Loan balance before:", ethers.formatEther(loanBalanceBefore));
+
+            const approveTx = await collateralToken.approve(
+                process.env.REACT_APP_LENDING_POOL_ADDRESS,
+                ethers.parseEther(collateralAmount)
+            );
+            await approveTx.wait();
+
+            lendingPool = new ethers.Contract(process.env.REACT_APP_LENDING_POOL_ADDRESS, LendingPool.abi, signer);
+            console.log("Contract initialized!")
+
+            const tx = await lendingPool.createLoan(
+                process.env.REACT_APP_COLLATERAL_TOKEN,
+                process.env.REACT_APP_LOAN_TOKEN,
+                ethers.parseEther(collateralAmount),
+                ethers.parseEther(loanAmount),
+                5, // % interest rate
+                30 // days duration
+            );
+            await tx.wait();
+            await fetchLoans();
+            setLoanAmount('');
+            setCollateralAmount('');
+
+            const loanBalanceAfter = await loanToken.balanceOf(userAddress);
+            console.log("Loan balance after:", ethers.formatEther(loanBalanceAfter));
+        } catch (err) {
+            console.error("Error creating loan:", err);
+            setErrorMessage("Failed to create loan");
+        }
+    };
+
+    const repayLoan = async () => {
+        try {
+            signer = await provider.getSigner();
+            const userAddress = await signer.getAddress();
+            
+            const loanToken = new ethers.Contract(
+                process.env.REACT_APP_LOAN_TOKEN,
+                TestToken.abi,
+                signer
+            );
+
+            lendingPool = new ethers.Contract(
+                process.env.REACT_APP_LENDING_POOL_ADDRESS, 
+                LendingPool.abi, 
+                signer
+            );
+            
+            const balance = await loanToken.balanceOf(userAddress);
+            
+            const loanData = await lendingPool.loans(userAddress);
+         
+            if (balance < loanData.loanAmount) { // add interest
+                throw new Error(`Insufficient loan tokens. Need ${ethers.formatUnits(loanData.loanAmount, 18)} but have ${ethers.formatUnits(balance, 18)}`);
+            }
+
+
+            const approveTx = await loanToken.approve(
+                process.env.REACT_APP_LENDING_POOL_ADDRESS,
+                loanData.loanAmount
+            );
+            await approveTx.wait();
+        
+
+            const tx = await lendingPool.repayLoan();
+            await tx.wait();
+           
+            
+            await fetchLoans();
+        } catch (err) {
+            console.error("Error repaying loan:", err);
+            setErrorMessage("Failed to repay loan: " + err.message);
+        }
+    };
+
+    const isLoanCreationDisabled = loans.length > 0;
 
     return (
         <div className="WalletCard">
@@ -93,18 +220,59 @@ const WalletCard = () => {
                 </div>
             </div>
 
-            {loans.length > 1 && (
+            <div className="loanCreation" style={{ marginTop: "20px" }}>
+                <h3>Create New Loan</h3>
+                {isLoanCreationDisabled ? (
+                    <p style={{ color: 'red' }}>You already have an active loan. Repay it first.</p>
+                ) : (
+                    <>
+                        <input 
+                            type="number"
+                            placeholder="Collateral Amount"
+                            value={collateralAmount}
+                            onChange={(e) => setCollateralAmount(e.target.value)}
+                            style={{ margin: "10px 0" }}
+                            disabled={isLoanCreationDisabled}
+                        />
+                        <input 
+                            type="number"
+                            placeholder="Loan Amount"
+                            value={loanAmount}
+                            onChange={(e) => setLoanAmount(e.target.value)}
+                            style={{ margin: "10px 0" }}
+                            disabled={isLoanCreationDisabled}
+                        />
+                        <Button
+                            onClick={createLoan}
+                            style={{ 
+                                background: isLoanCreationDisabled ? "#ccc" : "#4CAF50", 
+                                color: "white" 
+                            }}
+                            disabled={isLoanCreationDisabled}
+                        >
+                            Create Loan
+                        </Button>
+                    </>
+                )}
+            </div>
+
+            {loans.length > 0 && (
                 <div className="loansDisplay">
-                    <h3>Your Loans</h3>
+                    <h3>Your Active Loans</h3>
                     {loans.map((loan, index) => (
-                        <div key={index} className="loanItem" style={{ 
-                            border: '1px solid #ddd',
-                            padding: '10px',
-                            margin: '10px 0',
-                            borderRadius: '5px'
-                        }}>
-                            <p>Loan Amount: {ethers.formatEther(loan.loanAmount.toString())} ETH</p>
+                        <div key={index} className="loanItem">
+                            <p>Loan Amount: {
+                                loan.loanAmount.toString() === "0" 
+                                    ? "0" 
+                                    : ethers.formatUnits(loan.loanAmount, 18)
+                            } ETH</p>
                             <p>Due Date: {new Date(loan.dueDate * 1000).toLocaleDateString()}</p>
+                            <Button
+                                onClick={repayLoan}
+                                style={{ background: "#2196F3", color: "white" }}
+                            >
+                                Repay Loan
+                            </Button>
                         </div>
                     ))}
                 </div>
