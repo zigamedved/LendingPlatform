@@ -8,19 +8,62 @@ import {
     Box,
     Container,
     Paper,
-    Divider
+    Chip,
+    Stack,
+    Grid2,
+    Alert
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { ethers } from "ethers";
 import LendingPool from '../abi/LendingPool.json';
 import TestToken from '../abi/TestToken.json';
-
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import TokenIcon from '@mui/icons-material/Token';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import PaymentIcon from '@mui/icons-material/Payment';
 
 const StyledCard = styled(Card)(({ theme }) => ({
-    maxWidth: 600,
-    margin: '20px auto',
-    padding: theme.spacing(2),
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    maxWidth: 800,
+    margin: '40px auto',
+    padding: theme.spacing(3),
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+    borderRadius: '16px',
+}));
+
+const BalanceCard = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(3),
+    borderRadius: '12px',
+    background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+    marginBottom: theme.spacing(2),
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+    '& .MuiOutlinedInput-root': {
+        borderRadius: '12px',
+    },
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+    width: '100%',
+    height: 'auto',
+    padding: '12px',
+    borderRadius: '12px',
+    backgroundColor: theme.palette.background.default,
+    '& .MuiChip-label': {
+        display: 'block',
+        whiteSpace: 'normal',
+        wordBreak: 'break-all',
+        fontSize: '1.1rem',
+        fontFamily: 'monospace',
+        padding: '4px'
+    }
+}));
+
+const LoanCard = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(3),
+    borderRadius: '12px',
+    background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+    marginTop: theme.spacing(3),
 }));
 
 const WalletCard = () => {
@@ -241,22 +284,37 @@ const WalletCard = () => {
         }
     };
 
-    const isLoanCreationDisabled = loans.length > 0;
+    const hasActiveLoan = loans.length > 0;
 
    return (
         <Container maxWidth="md">
             <StyledCard>
                 <CardContent>
-                    <Typography variant="h4" gutterBottom align="center" color="primary">
+                    <Typography 
+                        variant="h3" 
+                        gutterBottom 
+                        align="center" 
+                        color="primary"
+                        sx={{ 
+                            fontWeight: 600,
+                            mb: 4
+                        }}
+                    >
                         DeFi Lending Platform
                     </Typography>
 
-                    <Box mb={3} display="flex" justifyContent="center">
+                    <Box mb={4} display="flex" justifyContent="center">
                         <Button
                             variant="contained"
                             color={defaultAccount ? "success" : "primary"}
                             onClick={connectwalletHandler}
                             size="large"
+                            startIcon={<AccountBalanceWalletIcon />}
+                            sx={{
+                                borderRadius: '12px',
+                                padding: '12px 24px',
+                                fontSize: '1.1rem'
+                            }}
                         >
                             {defaultAccount ? "Connected!" : "Connect Wallet"}
                         </Button>
@@ -264,124 +322,176 @@ const WalletCard = () => {
 
                     {defaultAccount && (
                         <>
-                            <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
-                                <Typography variant="subtitle1" color="textSecondary">
-                                    Wallet Address
-                                </Typography>
-                                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                                    {defaultAccount}
-                                </Typography>
-                                
-                                <Divider sx={{ my: 1 }} />
-                                
-                                <Typography variant="subtitle1" color="textSecondary">
-                                    Balance
-                                </Typography>
-                                <Typography variant="h6">
-                                    {userBalance ?? 0} ETH
-                                </Typography>
-
-                                <Divider sx={{ my: 1 }} />
-
-                                <Typography variant="subtitle1" color="textSecondary">
-                                    Collateral Balance
-                                </Typography>
-                                <Typography variant="h6">
-                                    { collateralBalance ?? 0} TCOL
-                                </Typography>
-
-                                <Divider sx={{ my: 1 }} />
-
-                                <Typography variant="subtitle1" color="textSecondary">
-                                    Loan Balance
-                                </Typography>
-                                <Typography variant="h6">
-                                    { loanBalance ?? 0} TLOAN
-                                </Typography>
-
-                            </Paper>
-
-                            <Box sx={{ mb: 3 }}>
-                                <Typography variant="h5" gutterBottom>
-                                    Create New Loan
-                                </Typography>
-                                {isLoanCreationDisabled ? (
-                                    <Typography color="error">
-                                        You already have an active loan. Repay it first.
-                                    </Typography>
-                                ) : (
-                                    <Box component="form" sx={{ '& > :not(style)': { m: 1 } }}>
-                                        <TextField
-                                            fullWidth
-                                            label="Collateral Amount"
-                                            type="number"
-                                            value={collateralAmount}
-                                            onChange={(e) => setCollateralAmount(e.target.value)}
-                                            disabled={isLoanCreationDisabled}
-                                            variant="outlined"
-                                        />
-                                        <TextField
-                                            fullWidth
-                                            label="Loan Amount"
-                                            type="number"
-                                            value={loanAmount}
-                                            onChange={(e) => setLoanAmount(e.target.value)}
-                                            disabled={isLoanCreationDisabled}
-                                            variant="outlined"
-                                        />
-                                        <Button
-                                            fullWidth
-                                            variant="contained"
-                                            onClick={createLoan}
-                                            disabled={isLoanCreationDisabled}
-                                            sx={{ mt: 2 }}
-                                        >
-                                            Create Loan
-                                        </Button>
-                                    </Box>
-                                )}
-                            </Box>
-
-                            {loans.length > 0 && (
-                                <Box>
-                                    <Typography variant="h5" gutterBottom>
-                                        Active Loans
-                                    </Typography>
-                                    {loans.map((loan, index) => (
-                                        <Paper key={index} elevation={2} sx={{ p: 2, mb: 2 }}>
-                                            <Typography variant="subtitle2" color="textSecondary">
-                                                Loan Amount
-                                            </Typography>
-                                            <Typography variant="h6">
-                                                {ethers.formatUnits(loan.loanAmount, 18)} ETH
-                                            </Typography>
-                                            
-                                            <Typography variant="subtitle2" color="textSecondary" sx={{ mt: 1 }}>
-                                                Due Date
-                                            </Typography>
-                                            <Typography variant="body1">
-                                                {new Date(loan.dueDate * 1000).toLocaleDateString()}
-                                            </Typography>
-                                            
-                                            <Button
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={repayLoan}
-                                                sx={{ mt: 2 }}
+                            <Stack spacing={3}>
+                                <BalanceCard elevation={2}>
+                                    <Stack spacing={2}>
+                                        <Box>
+                                            <Typography 
+                                                variant="subtitle2" 
+                                                color="textSecondary" 
+                                                gutterBottom
+                                                sx={{ fontSize: '1rem' }}
                                             >
-                                                Repay Loan
+                                                Wallet Address
+                                            </Typography>
+                                            <StyledChip 
+                                                label={defaultAccount}
+                                                variant="outlined"
+                                            />
+                                        </Box>
+
+                                        <Box display="flex" gap={4}>
+                                            <Box flex={1}>
+                                                <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                                                    ETH Balance
+                                                </Typography>
+                                                <Typography variant="h5" display="flex" alignItems="center" gap={1}>
+                                                    <TokenIcon color="primary" />
+                                                    {userBalance ?? 0} ETH
+                                                </Typography>
+                                            </Box>
+                                            <Box flex={1}>
+                                                <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                                                    Collateral Balance
+                                                </Typography>
+                                                <Typography variant="h5" display="flex" alignItems="center" gap={1}>
+                                                    <AccountBalanceIcon color="primary" />
+                                                    {collateralBalance ?? 0} TCOL
+                                                </Typography>
+                                            </Box>
+                                            <Box flex={1}>
+                                                <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                                                    Loan Balance
+                                                </Typography>
+                                                <Typography variant="h5" display="flex" alignItems="center" gap={1}>
+                                                    <TokenIcon color="primary" />
+                                                    {loanBalance ?? 0} TLOAN
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </Stack>
+                                </BalanceCard>
+
+                                <Box>
+                                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                                        Create New Loan
+                                    </Typography>
+                                    {hasActiveLoan ? (                     
+                                        <Alert variant="filled" severity="warning">
+                                            You already have an active loan. Please repay it before creating a new one.
+                                        </Alert>                         
+                                    ) : (
+                                        <Box 
+                                            component="form" 
+                                            sx={{ 
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 2,
+                                                mt: 2
+                                            }}
+                                        >
+                                            <StyledTextField
+                                                fullWidth
+                                                label="Collateral Amount"
+                                                type="number"
+                                                value={collateralAmount}
+                                                onChange={(e) => setCollateralAmount(e.target.value)}
+                                                variant="outlined"
+                                                placeholder="Enter amount of TCOL"
+                                                disabled={hasActiveLoan}
+                                            />
+                                            <StyledTextField
+                                                fullWidth
+                                                label="Loan Amount"
+                                                type="number"
+                                                value={loanAmount}
+                                                onChange={(e) => setLoanAmount(e.target.value)}
+                                                variant="outlined"
+                                                placeholder="Enter amount of TLOAN"
+                                                disabled={hasActiveLoan}
+                                            />
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                onClick={createLoan}
+                                                disabled={hasActiveLoan}
+                                                sx={{ 
+                                                    mt: 2,
+                                                    height: '56px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '1.1rem',
+                                                    opacity: hasActiveLoan ? 0.6 : 1
+                                                }}
+                                            >
+                                                Create Loan
                                             </Button>
-                                        </Paper>
-                                    ))}
+                                        </Box>
+                                    )}
                                 </Box>
+
+                                {loans.length > 0 && (
+                                    <LoanCard elevation={2}>
+                                        <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                                            Active Loan
+                                        </Typography>
+                                        {loans.map((loan, index) => (
+                                            <Box key={index} sx={{ mt: 2 }}>
+                                                <Grid2 container spacing={2}>
+                                                    <Grid2 xs={12} md={4}>
+                                                        <Typography variant="subtitle2" color="textSecondary">
+                                                            Loan Amount
+                                                        </Typography>
+                                                        <Typography variant="h6">
+                                                            {ethers.formatUnits(loan.loanAmount, 18)} TLOAN
+                                                        </Typography>
+                                                    </Grid2>
+                                                    <Grid2 xs={12} md={4}>
+                                                        <Typography variant="subtitle2" color="textSecondary">
+                                                            Due Date
+                                                        </Typography>
+                                                        <Typography variant="h6">
+                                                            {new Date(Number(loan.dueDate) * 1000).toLocaleDateString()}
+                                                        </Typography>
+                                                    </Grid2>
+                                                </Grid2>
+
+                                                <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                                                    <Button
+                                                        fullWidth
+                                                        variant="contained"
+                                                        color="secondary"
+                                                        onClick={repayLoan}
+                                                        startIcon={<PaymentIcon />}
+                                                        sx={{ 
+                                                            height: '48px',
+                                                            borderRadius: '12px',
+                                                            fontSize: '1.1rem'
+                                                        }}
+                                                    >
+                                                        Repay Loan
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </LoanCard>
+                                )}
+                            </Stack>
+
+                            {errorMessage && (
+                                <Typography 
+                                    color="error" 
+                                    sx={{ 
+                                        mt: 3,
+                                        p: 2,
+                                        bgcolor: 'error.light',
+                                        borderRadius: 2,
+                                        color: 'error.contrastText'
+                                    }}
+                                >
+                                    {errorMessage}
+                                </Typography>
                             )}
                         </>
-                    )}
-
-                    {errorMessage && (
-                        <Typography color="error" sx={{ mt: 2 }}>
-                            {errorMessage}
-                        </Typography>
                     )}
                 </CardContent>
             </StyledCard>

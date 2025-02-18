@@ -35,3 +35,9 @@ This project is a decentralized lending platform that allows users to lend and b
 
 # IMPORTANT
 Metamask has to be connected to the local hardhat network: ![alt text](/src/hardhatNetwork.png)
+
+# DAPP
+
+![alt text](/src/app1.png)
+
+![alt text](/src/app2.png)

@@ -3,6 +3,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@ethersproject/providers": "^5.7.0",
+    "@mui/icons-material": "^6.4.5",
     "@mui/material": "^6.4.4",
     "@web3-react/core": "^8.2.0",
     "@web3-react/injected-connector": "^6.0.7",
