@@ -32,6 +32,9 @@ const WalletCard = () => {
     const [loanAmount, setLoanAmount] = useState('');
     const [collateralAmount, setCollateralAmount] = useState('');
 
+    const [loanBalance, setLoanBalance] = useState(null);
+    const [collateralBalance, setCollateralBalance] = useState(null);   
+
     let signer;
     const connectwalletHandler = () => {
         if (window.ethereum) {
@@ -50,6 +53,12 @@ const WalletCard = () => {
 
         const balance = await getUserBalance(address)
         setUserBalance(ethers.formatEther(balance));
+
+        const collateralBalance = await getCollateralBalance(address)
+        setCollateralBalance(ethers.formatEther(collateralBalance));
+
+        const loanBalance = await getLoanBalance(address)
+        setLoanBalance(ethers.formatEther(loanBalance));
     };
 
     let lendingPool;
@@ -84,6 +93,8 @@ const WalletCard = () => {
             );
             
             try {
+                setLoanBalance(ethers.formatEther(await getLoanBalance(defaultAccount)));
+                setCollateralBalance(ethers.formatEther(await getCollateralBalance(defaultAccount)));
                 const loanData = await lendingPool.loans(defaultAccount);
                 if (loanData && loanData.loanAmount.toString() !== "0") {
                     setLoans([{
@@ -114,6 +125,28 @@ const WalletCard = () => {
         return provider.getBalance(address, "latest");
     };
 
+    const getCollateralBalance = async (address) => {
+        const collateralToken = new ethers.Contract(
+            process.env.REACT_APP_COLLATERAL_TOKEN,
+            TestToken.abi,
+            provider
+        );
+
+        const balance = await collateralToken.balanceOf(address);
+        return balance;
+    };
+
+    const getLoanBalance = async (address) => {
+        const loanToken = new ethers.Contract(
+            process.env.REACT_APP_LOAN_TOKEN,
+            TestToken.abi,
+            provider
+        );
+
+        const balance = await loanToken.balanceOf(address);
+        return balance;
+    };
+
 
     const createLoan = async () => {
         try {
@@ -128,24 +161,14 @@ const WalletCard = () => {
             const userAddress = await signer.getAddress();
             console.log("User address:", userAddress);
             
+            console.log("Collateral token balance:", ethers.formatEther(await getCollateralBalance(userAddress)));
+            console.log("Loan balance before:", ethers.formatEther(await getLoanBalance(userAddress)));
+
             const collateralToken = new ethers.Contract(
                 process.env.REACT_APP_COLLATERAL_TOKEN,
                 TestToken.abi,
                 signer
             );
-
-            const balance = await collateralToken.balanceOf(userAddress);
-            console.log("Collateral token balance:", ethers.formatEther(balance));
-
-
-            const loanToken = new ethers.Contract(
-                process.env.REACT_APP_LOAN_TOKEN,
-                TestToken.abi,
-                provider
-            );
-            const loanBalanceBefore = await loanToken.balanceOf(userAddress);
-            console.log("Loan balance before:", ethers.formatEther(loanBalanceBefore));
-
             const approveTx = await collateralToken.approve(
                 process.env.REACT_APP_LENDING_POOL_ADDRESS,
                 ethers.parseEther(collateralAmount)
@@ -165,14 +188,9 @@ const WalletCard = () => {
             );
             await tx.wait();
             await fetchLoans();
-            setLoanAmount('');
-            setCollateralAmount('');
 
-            const loanBalanceAfter = await loanToken.balanceOf(userAddress);
-            console.log("Loan balance after:", ethers.formatEther(loanBalanceAfter));
-
-            const balanceAfter = await collateralToken.balanceOf(userAddress);
-            console.log("Collateral token balance after:", ethers.formatEther(balanceAfter));
+            console.log("Collateral token after:", ethers.formatEther(await getCollateralBalance(userAddress)));
+            console.log("Loan balance after:", ethers.formatEther(await getLoanBalance( userAddress)));
         } catch (err) {
             console.error("Error creating loan:", err);
             setErrorMessage("Failed to create loan");
@@ -254,7 +272,7 @@ const WalletCard = () => {
                                     {defaultAccount}
                                 </Typography>
                                 
-                                <Divider sx={{ my: 2 }} />
+                                <Divider sx={{ my: 1 }} />
                                 
                                 <Typography variant="subtitle1" color="textSecondary">
                                     Balance
@@ -262,6 +280,25 @@ const WalletCard = () => {
                                 <Typography variant="h6">
                                     {userBalance ?? 0} ETH
                                 </Typography>
+
+                                <Divider sx={{ my: 1 }} />
+
+                                <Typography variant="subtitle1" color="textSecondary">
+                                    Collateral Balance
+                                </Typography>
+                                <Typography variant="h6">
+                                    { collateralBalance ?? 0} TCOL
+                                </Typography>
+
+                                <Divider sx={{ my: 1 }} />
+
+                                <Typography variant="subtitle1" color="textSecondary">
+                                    Loan Balance
+                                </Typography>
+                                <Typography variant="h6">
+                                    { loanBalance ?? 0} TLOAN
+                                </Typography>
+
                             </Paper>
 
                             <Box sx={{ mb: 3 }}>
