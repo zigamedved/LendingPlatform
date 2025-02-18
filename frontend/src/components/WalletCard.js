@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from "react";
-import Button from "@mui/material/Button";
+import { 
+    Button, 
+    TextField, 
+    Card, 
+    CardContent, 
+    Typography, 
+    Box,
+    Container,
+    Paper,
+    Divider
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { ethers } from "ethers";
 import LendingPool from '../abi/LendingPool.json';
 import TestToken from '../abi/TestToken.json';
 
+
+const StyledCard = styled(Card)(({ theme }) => ({
+    maxWidth: 600,
+    margin: '20px auto',
+    padding: theme.spacing(2),
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+}));
 
 const WalletCard = () => {
     const provider = new ethers.BrowserProvider(window.ethereum)
@@ -152,6 +170,9 @@ const WalletCard = () => {
 
             const loanBalanceAfter = await loanToken.balanceOf(userAddress);
             console.log("Loan balance after:", ethers.formatEther(loanBalanceAfter));
+
+            const balanceAfter = await collateralToken.balanceOf(userAddress);
+            console.log("Collateral token balance after:", ethers.formatEther(balanceAfter));
         } catch (err) {
             console.error("Error creating loan:", err);
             setErrorMessage("Failed to create loan");
@@ -204,82 +225,131 @@ const WalletCard = () => {
 
     const isLoanCreationDisabled = loans.length > 0;
 
-    return (
-        <div className="WalletCard">
-            <h3 className="h4">Welcome to React DApp Metamask</h3>
-            <Button
-                style={{ background: defaultAccount ? "#A5CC82" : "white" }}
-                onClick={connectwalletHandler}
-            >
-                {defaultAccount ? "Connected!" : "Connect"}
-            </Button>
-            <div className="displayAccount">
-                <h4 className="walletAddress">Address:{defaultAccount}</h4>
-                <div className="balanceDisplay">
-                    <h3>Wallet Amount: {userBalance ?? 0}</h3>
-                </div>
-            </div>
+   return (
+        <Container maxWidth="md">
+            <StyledCard>
+                <CardContent>
+                    <Typography variant="h4" gutterBottom align="center" color="primary">
+                        DeFi Lending Platform
+                    </Typography>
 
-            <div className="loanCreation" style={{ marginTop: "20px" }}>
-                <h3>Create New Loan</h3>
-                {isLoanCreationDisabled ? (
-                    <p style={{ color: 'red' }}>You already have an active loan. Repay it first.</p>
-                ) : (
-                    <>
-                        <input 
-                            type="number"
-                            placeholder="Collateral Amount"
-                            value={collateralAmount}
-                            onChange={(e) => setCollateralAmount(e.target.value)}
-                            style={{ margin: "10px 0" }}
-                            disabled={isLoanCreationDisabled}
-                        />
-                        <input 
-                            type="number"
-                            placeholder="Loan Amount"
-                            value={loanAmount}
-                            onChange={(e) => setLoanAmount(e.target.value)}
-                            style={{ margin: "10px 0" }}
-                            disabled={isLoanCreationDisabled}
-                        />
+                    <Box mb={3} display="flex" justifyContent="center">
                         <Button
-                            onClick={createLoan}
-                            style={{ 
-                                background: isLoanCreationDisabled ? "#ccc" : "#4CAF50", 
-                                color: "white" 
-                            }}
-                            disabled={isLoanCreationDisabled}
+                            variant="contained"
+                            color={defaultAccount ? "success" : "primary"}
+                            onClick={connectwalletHandler}
+                            size="large"
                         >
-                            Create Loan
+                            {defaultAccount ? "Connected!" : "Connect Wallet"}
                         </Button>
-                    </>
-                )}
-            </div>
+                    </Box>
 
-            {loans.length > 0 && (
-                <div className="loansDisplay">
-                    <h3>Your Active Loans</h3>
-                    {loans.map((loan, index) => (
-                        <div key={index} className="loanItem">
-                            <p>Loan Amount: {
-                                loan.loanAmount.toString() === "0" 
-                                    ? "0" 
-                                    : ethers.formatUnits(loan.loanAmount, 18)
-                            } ETH</p>
-                            <p>Due Date: {new Date(loan.dueDate * 1000).toLocaleDateString()}</p>
-                            <Button
-                                onClick={repayLoan}
-                                style={{ background: "#2196F3", color: "white" }}
-                            >
-                                Repay Loan
-                            </Button>
-                        </div>
-                    ))}
-                </div>
-            )}
+                    {defaultAccount && (
+                        <>
+                            <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+                                <Typography variant="subtitle1" color="textSecondary">
+                                    Wallet Address
+                                </Typography>
+                                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                                    {defaultAccount}
+                                </Typography>
+                                
+                                <Divider sx={{ my: 2 }} />
+                                
+                                <Typography variant="subtitle1" color="textSecondary">
+                                    Balance
+                                </Typography>
+                                <Typography variant="h6">
+                                    {userBalance ?? 0} ETH
+                                </Typography>
+                            </Paper>
 
-            {errorMessage}
-        </div>
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="h5" gutterBottom>
+                                    Create New Loan
+                                </Typography>
+                                {isLoanCreationDisabled ? (
+                                    <Typography color="error">
+                                        You already have an active loan. Repay it first.
+                                    </Typography>
+                                ) : (
+                                    <Box component="form" sx={{ '& > :not(style)': { m: 1 } }}>
+                                        <TextField
+                                            fullWidth
+                                            label="Collateral Amount"
+                                            type="number"
+                                            value={collateralAmount}
+                                            onChange={(e) => setCollateralAmount(e.target.value)}
+                                            disabled={isLoanCreationDisabled}
+                                            variant="outlined"
+                                        />
+                                        <TextField
+                                            fullWidth
+                                            label="Loan Amount"
+                                            type="number"
+                                            value={loanAmount}
+                                            onChange={(e) => setLoanAmount(e.target.value)}
+                                            disabled={isLoanCreationDisabled}
+                                            variant="outlined"
+                                        />
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            onClick={createLoan}
+                                            disabled={isLoanCreationDisabled}
+                                            sx={{ mt: 2 }}
+                                        >
+                                            Create Loan
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
+
+                            {loans.length > 0 && (
+                                <Box>
+                                    <Typography variant="h5" gutterBottom>
+                                        Active Loans
+                                    </Typography>
+                                    {loans.map((loan, index) => (
+                                        <Paper key={index} elevation={2} sx={{ p: 2, mb: 2 }}>
+                                            <Typography variant="subtitle2" color="textSecondary">
+                                                Loan Amount
+                                            </Typography>
+                                            <Typography variant="h6">
+                                                {ethers.formatUnits(loan.loanAmount, 18)} ETH
+                                            </Typography>
+                                            
+                                            <Typography variant="subtitle2" color="textSecondary" sx={{ mt: 1 }}>
+                                                Due Date
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {new Date(loan.dueDate * 1000).toLocaleDateString()}
+                                            </Typography>
+                                            
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={repayLoan}
+                                                sx={{ mt: 2 }}
+                                            >
+                                                Repay Loan
+                                            </Button>
+                                        </Paper>
+                                    ))}
+                                </Box>
+                            )}
+                        </>
+                    )}
+
+                    {errorMessage && (
+                        <Typography color="error" sx={{ mt: 2 }}>
+                            {errorMessage}
+                        </Typography>
+                    )}
+                </CardContent>
+            </StyledCard>
+        </Container>
     );
 };
+
 export default WalletCard;
