@@ -120,10 +120,6 @@ const WalletCard = () => {
         checkConnection();
     }, []);
 
-    useEffect(() => {
-        console.log("my loans: ", loans);
-    }, [loans]);
-
     const fetchLoans = async () => {
         if (!defaultAccount) {
             return;
