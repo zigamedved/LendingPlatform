@@ -5,6 +5,8 @@
     "connectwallet",
     "ethersproject",
     "IERC",
+    "nomicfoundation",
+    "nomiclabs",
     "pgdata",
     "prestart",
     "Reentrancy",

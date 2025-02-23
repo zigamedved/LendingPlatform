@@ -40,4 +40,4 @@ main().catch((error) => {
 
 // Run with: 
 // npx hardhat compile
-// npx hardhat run scripts/deploy.ts --network hardhat
+// npx hardhat run scripts/deploy.ts --network localhostt
