@@ -37,7 +37,7 @@ const BalanceCard = styled(Paper)(({ theme }) => ({
     marginBottom: theme.spacing(2),
 }));
 
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const StyledTextField = styled(TextField)(({ }) => ({
     '& .MuiOutlinedInput-root': {
         borderRadius: '12px',
     },
@@ -65,6 +65,10 @@ const LoanCard = styled(Paper)(({ theme }) => ({
     background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
     marginTop: theme.spacing(3),
 }));
+
+const shortenInput = function(input) {
+    return (+input).toFixed(2)
+}
 
 const WalletCard = () => {
     const provider = new ethers.BrowserProvider(window.ethereum)
@@ -95,13 +99,13 @@ const WalletCard = () => {
         setDefaultAccount(address);
 
         const balance = await getUserBalance(address)
-        setUserBalance(ethers.formatEther(balance));
+        setUserBalance(shortenInput(ethers.formatEther(balance)));
 
         const collateralBalance = await getCollateralBalance(address)
-        setCollateralBalance(ethers.formatEther(collateralBalance));
+        setCollateralBalance(shortenInput(ethers.formatEther(collateralBalance)));
 
         const loanBalance = await getLoanBalance(address)
-        setLoanBalance(ethers.formatEther(loanBalance));
+        setLoanBalance(shortenInput(ethers.formatEther(loanBalance)));
     };
 
     let lendingPool;
@@ -222,8 +226,8 @@ const WalletCard = () => {
                 process.env.REACT_APP_LOAN_TOKEN,
                 ethers.parseEther(collateralAmount),
                 ethers.parseEther(loanAmount),
-                5, // % interest rate
-                30 // days duration
+                5,
+                30
             );
             await tx.wait();
             await fetchLoans();
@@ -342,7 +346,7 @@ const WalletCard = () => {
                                                     ETH Balance
                                                 </Typography>
                                                 <Typography variant="h5" display="flex" alignItems="center" gap={1}>
-                                                    <TokenIcon color="primary" />
+                                                <TokenIcon color="primary" />
                                                     {userBalance ?? 0} ETH
                                                 </Typography>
                                             </Box>

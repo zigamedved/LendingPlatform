@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "bgcolor",
     "collateralization",
     "connectwallet",
     "ethersproject",
@@ -7,6 +8,7 @@
     "pgdata",
     "prestart",
     "Reentrancy",
+    "TCOL",
     "TLOAN",
     "typechain",
     "vanp"
