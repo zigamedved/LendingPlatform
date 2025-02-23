@@ -21,10 +21,10 @@ async function main() {
   await lendingPool.setSupportedToken(loanAddress, true);
 
   const userAddress = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Hardhat generated public/private key pair
-  await collateralToken.transfer(userAddress, ethers.parseEther("1000")); // add collateral to user
+  await collateralToken.transfer(userAddress, ethers.parseEther("1000")); // pre-fund user account with collateral 
 
   await loanToken.approve(lendingPoolAddress, ethers.parseEther("10000")); // approve loan token for lending pool
-  await lendingPool.deposit(loanAddress, ethers.parseEther("10000")); // deposit loan token to lending pool (liquidity)
+  await lendingPool.deposit(loanAddress, ethers.parseEther("10000")); // deposit loan token to lending pool (adding liquidity)
 
   console.log("Deployment addresses:");
   console.log("REACT_APP_LENDING_POOL_ADDRESS=", lendingPoolAddress);
@@ -40,4 +40,4 @@ main().catch((error) => {
 
 // Run with: 
 // npx hardhat compile
-// npx hardhat run scripts/deploy.ts --network hardhat
+// npx hardhat run scripts/deploy.ts --network localhostt
