@@ -3,29 +3,29 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 @Entity()
 export class Loan {
   @PrimaryGeneratedColumn("uuid")
-  id: string;
+  id!: string;
 
   @Column()
-  borrower: string;
+  borrower!: string;
 
   @Column()
-  collateralToken: string;
+  collateralToken!: string;
 
   @Column()
-  loanToken: string;
+  loanToken!: string;
 
   @Column("float")
-  collateralAmount: number;
+  collateralAmount!: number;
 
   @Column("float")
-  loanAmount: number;
+  loanAmount!: number;
 
   @Column("float")
-  interestRate: number;
+  interestRate!: number;
 
   @Column()
-  dueDate: string;
+  dueDate!: string;
 
   @Column()
-  liquidated: boolean;
+  liquidated!: boolean;
 }

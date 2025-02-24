@@ -1,38 +1,18 @@
 version: "3.8"
-
 services:
   postgres:
     image: postgres:14
-    env_file: ../.env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lending
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  hardhat-node:
-    build:
-      context: ../contracts
-    command: npx hardhat node
-    ports:
-      - "8545:8545"
-
-  backend:
-    build:
-      context: ../backend
-    ports:
-      - "3001:3001"
-    env_file: ../.env
-    depends_on:
-      - postgres
-      - hardhat-node
-
-  frontend:
-    build:
-      context: ../frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    restart: always
+    shm_size: "256mb"
 volumes:
-  pgdata:
+  postgres_data:
+    driver: local
