@@ -30,11 +30,12 @@ This project is a decentralized lending platform that allows users to lend and b
 # Running the blockchain
 - open terminal, go to /contracts and run `npx hardhat node`
 - open new terminal, go to /contracts and run `npx hardhat run scripts/deploy.ts --network localhost`
-- copy and paste the output of the deploy.ts script into your `.env` file inside the frontend dir
+- copy and paste the output of the deploy.ts script into your `.env` files inside the frontend and backend folders
+- also copy and paste the generated abi's (artifacts/contracts/..) into backend and frontend abi folders
 
 # Running the backend
 - go to /backend and run `npm install`
-- go to /docker and run `docker compose up -d postgres`
+- go to /docker and run `docker compose up -d`
 - go back to /backend and run `npm run start`
 
 # Running the frontend
@@ -48,3 +49,5 @@ Metamask has to be connected to the local hardhat network: ![alt text](/src/hard
 ![alt text](/src/app1.png)
 
 ![alt text](/src/app2.png)
+
+![alt text](/src/apiCall.png)

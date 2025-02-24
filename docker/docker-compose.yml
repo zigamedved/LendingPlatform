@@ -13,32 +13,6 @@ services:
       - postgres_data:/var/lib/postgresql/data/pgdata
     restart: always
     shm_size: "256mb"
-
-  hardhat-node:
-    build:
-      context: ../contracts
-    command: npx hardhat node
-    ports:
-      - "8545:8545"
-
-  backend:
-    build:
-      context: ../backend
-    ports:
-      - "3001:3001"
-    depends_on:
-      - postgres
-      - hardhat-node
-
-  frontend:
-    build:
-      context: ../frontend
-    env_file: ../frontend/.env
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-
 volumes:
   postgres_data:
     driver: local
