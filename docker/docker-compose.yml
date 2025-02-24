@@ -1,10 +1,18 @@
+version: "3.8"
 services:
   postgres:
     image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lending
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    restart: always
+    shm_size: "256mb"
 
   hardhat-node:
     build:
@@ -32,4 +40,5 @@ services:
       - backend
 
 volumes:
-  pgdata:
+  postgres_data:
+    driver: local

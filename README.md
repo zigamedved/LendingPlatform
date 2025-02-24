@@ -19,7 +19,6 @@ This project is a decentralized lending platform that allows users to lend and b
 #### 2. Backend (Logic Layer)
 - Index blockchain events (e.g., loans created, repayments)
 - REST/GraphQL API for frontend interaction
-- Risk monitoring (collateral ratios, liquidation triggers)
 - **Tools**: Node.js/TypeScript, The Graph Protocol, PostgreSQL
 
 #### 3. Frontend (Presentation Layer)
@@ -28,10 +27,17 @@ This project is a decentralized lending platform that allows users to lend and b
 - Integrated borrowing and loan repayment
 - **Tools**: React, ethers.js, Web3-UI components
 
-# Running 
-- go to /contracts and run `npx hardhat node`
+# Running the blockchain
+- open terminal, go to /contracts and run `npx hardhat node`
 - open new terminal, go to /contracts and run `npx hardhat run scripts/deploy.ts --network localhost`
 - copy and paste the output of the deploy.ts script into your `.env` file inside the frontend dir
+
+# Running the backend
+- go to /backend and run `npm install`
+- go to /docker and run `docker compose up -d postgres`
+- go back to /backend and run `npm run start`
+
+# Running the frontend
 - open new terminal, go to /frontend and run `npm run start`
 
 # IMPORTANT

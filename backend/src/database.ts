@@ -1,5 +1,8 @@
 import { DataSource } from "typeorm";
 import { Loan } from "./entities/Loan";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
