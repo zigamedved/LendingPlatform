@@ -1,6 +1,6 @@
 # Decentralized Lending Platform with Collateralized Loans
 
-Tech Stack: Solidity, TypeScript, Hardhat, Docker, PostgreSQL, React, GraphQL, IPFS
+Tech Stack: Solidity, TypeScript, Hardhat, Docker, PostgreSQL, React, GraphQL
 
 ## Project Overview
 
@@ -13,7 +13,7 @@ This project is a decentralized lending platform that allows users to lend and b
 #### 1. Smart Contracts (Blockchain Layer)
 - Collateralized loan logic (deposit, borrow, repay, liquidate)
 - Interest rate models (e.g., algorithmic rates based on utilization)
-- ERC-20 token integration for collateral and stablecoins
+- ERC-20 token integration for collateral and stable coins
 - **Tools**: Solidity, Hardhat, OpenZeppelin libraries
 
 #### 2. Backend (Logic Layer)
@@ -24,8 +24,8 @@ This project is a decentralized lending platform that allows users to lend and b
 
 #### 3. Frontend (Presentation Layer)
 - User dashboard for managing loans
-- Real-time analytics (loan health, interest accrual)
-- Wallet integration (MetaMask, WalletConnect)
+- Wallet integration (MetaMask)
+- Integrated borrowing and loan repayment
 - **Tools**: React, ethers.js, Web3-UI components
 
 # Running 
