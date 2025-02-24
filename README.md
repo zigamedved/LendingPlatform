@@ -46,10 +46,10 @@ Metamask has to be connected to the local hardhat network: ![alt text](/src/hard
 
 # DAPP
 
-![alt text](/src/app1.png)
+![alt text](/src/appLanding.png)
 
-![alt text](/src/app2.png)
+![alt text](/src/appConnected.png)
 
-![alt text](/src/app3.png)
+![alt text](/src/appLoanCreated.png)
 
 ![alt text](/src/apiCall.png)
