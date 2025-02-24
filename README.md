@@ -50,4 +50,6 @@ Metamask has to be connected to the local hardhat network: ![alt text](/src/hard
 
 ![alt text](/src/app2.png)
 
+![alt text](/src/app3.png)
+
 ![alt text](/src/apiCall.png)
