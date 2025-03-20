@@ -55,3 +55,7 @@ Metamask has to be connected to the local hardhat network: ![alt text](/src/hard
 # API
 
 ![alt text](/src/apiCall.png)
+
+# CERTIFIED on 20.03.2025
+
+![alt text](/src/certificate.png)
